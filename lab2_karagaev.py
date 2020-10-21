@@ -28,50 +28,50 @@ def find_max_price():
 
 
 def check_platform():
-    if any(platform in line[6].split(';') for platform in user_platforms) or user_platforms == ['']:
-        return 1
+    if any(platform in game_dict['platforms'].split(';') for platform in user_platforms) or user_platforms == ['']:
+        return True
     else:
-        return 0
+        return False
 
 
 def check_category():
-    if any(category in line[8].split(';') for category in user_categories) or user_categories == ['']:
-        return 1
+    if any(category in game_dict['categories'].split(';') for category in user_categories) or user_categories == ['']:
+        return True
     else:
-        return 0
+        return False
 
 
 def check_genre():
-    if any(genre in line[9].split(';') for genre in user_genres) or user_genres == ['']:
-        return 1
+    if any(genre in game_dict['genres'].split(';') for genre in user_genres) or user_genres == ['']:
+        return True
     else:
-        return 0
+        return False
 
 
 def check_raiting():
-    if line[12].isdigit() and line[13].isdigit():
-        if ((user_rating > 0) and int(line[12]) > int(line[13])) or user_rating == 0:
-            return 1
+    if game_dict['positive_ratings'].isdigit() and game_dict['negative_ratings'].isdigit():
+        if ((user_rating > 0) and int(game_dict['positive_ratings']) > int(game_dict['negative_ratings'])) or user_rating == 0:
+            return True
         else:
-            return 0
+            return False
     else:
-        return 0
+        return False
 
 
 def check_price():
-    if user_price[0] <= float(line[17]) <= user_price[1]:
-        return 1
+    if user_price_low <= float(game_dict['price\n']) <= user_price_max:
+        return True
     else:
-        return 0
+        return False
 
 
 def game_check():
-    check = check_category() + check_raiting() + check_platform() + check_price() + check_genre()
-    if check == 5:
-        result = f'{line[1]} Цена:{line[17]}  Жанр:{line[9]}\n'
+    check = check_category() and check_raiting() and check_platform() and check_price() and check_genre()
+    if check:
+        result = '{} Цена:{}  Жанр:{}\n'.format(game_dict['name'], game_dict['price\n'], game_dict['genres'])
         return result
     else:
-        return 0
+        return False
 
 
 instruction = '''Вводите несколько ответов через запятую\nЕсли это параметр не имеет значения, нажмите Enter\n'''
@@ -93,15 +93,16 @@ if user_rating == '+':
 else:
     user_rating = 0
 
-user_price = [input('Co скольки долларов начинается стоимость игры?'), input('Максимальная стоимость игры')]
-if user_price[0].isdigit():
-    user_price[0] = int(user_price[0])
+user_price_low = input('Co скольки долларов начинается стоимость игры?')
+user_price_max = input('Максимальная стоимость игры')
+if user_price_low.isdigit():
+    user_price_low = int(user_price_low)
 else:
-    user_price[0] = 0
-if user_price[1].isdigit():
-    user_price[1] = int(user_price[1])
+    user_price_low = 0
+if user_price_max.isdigit():
+    user_price_max = int(user_price_max)
 else:
-    user_price[1] = find_max_price()
+    user_price_max = find_max_price()
 
 
 with open('steam.csv', encoding='utf-8') as f, open('result.txt', 'w', encoding='utf-8') as result_file:
@@ -110,13 +111,10 @@ with open('steam.csv', encoding='utf-8') as f, open('result.txt', 'w', encoding=
     for line in f:
         line = list(line.split(','))
         game_dict = dict(zip(keys, line))
-        if line[7].isdigit():
-            if user_age >= int(line[7]):
-                if game_check() != 0:
+        if game_dict['required_age'].isdigit():
+            if user_age >= int(game_dict['required_age']):
+                if game_check():
                     result_file.write(game_check())
-
-
-
 
 
 
